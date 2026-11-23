@@ -112,7 +112,9 @@ invaris --report report.json check
 
 `check` runs the guard against `source.txt`. `challenge` reports `PROVEN` after detecting the controlled mutation in a disposable copy. Both return JSON reports and exit 0 on success; `--format text` prints a readable summary with the same exit code. The last command also saves the report to `report.json`; use a new filename each time because existing reports are never overwritten.
 
-For an existing project, run `invaris init --detect` to see which project markers Invaris recognizes, then `invaris init` (or `invaris init --preset go` for a Go module) to create a starter `invaris.json` without running any project code; see [create and upgrade harnesses](authoring.md). Then add trusted commands that check that project. The demo guard checks only its sample file. See the [harness specification](harness-spec.md). A harness can explicitly invoke a shell; the engine does not interpret shell syntax itself.
+For an existing project, run `invaris init --detect` to see which project markers Invaris recognizes, then `invaris init` (or `invaris init --preset go` for a Go module) to create `.invaris/invaris.json` without running project code. Add trusted commands that check your project. The demo guard checks only its sample file. A harness can explicitly invoke a shell. See the [harness specification](harness-spec.md).
+
+Run `invaris doctor` to confirm which harness Invaris selects and whether Git tracks or ignores it. Normally, commit a harness that defines project policy so teammates and CI can use it. The default `.invaris/invaris.json` can be committed in place, and an existing root-level `invaris.json` remains supported. See [how to share a project harness through Git](authoring.md#share-a-project-harness-through-git).
 
 You can select a harness by absolute path from any directory:
 

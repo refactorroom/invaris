@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://invaris.dev/schemas/doctor-v1alpha1.schema.json",
   "title": "Invaris doctor v1alpha1",
-  "description": "The output of `invaris doctor --format json`: a bounded inspection of one harness's setup. doctor executes no harness command, so every check has `executed: false`; a `pass` describes the setup that was inspected, not the behavior of any command. When the harness does not load, the only checks are `harness.load` (fail) and `inspection` (skipped). The summary counts the checks by status.",
+  "description": "The output of `invaris doctor --format json`: a bounded inspection of one harness's setup. doctor executes no harness command, so every check has `executed: false`. A `pass` describes the setup that was inspected. When a readable harness does not load, doctor reports the load failure, skips harness inspection and still reports selection and Git status. The summary counts the checks by status.",
   "type": "object",
   "additionalProperties": false,
   "required": ["version", "harness", "harnessVersion", "checks", "summary"],
@@ -44,8 +44,14 @@
         "properties": {
           "checks": {
             "minItems": 2,
-            "maxItems": 2,
-            "items": { "properties": { "id": { "enum": ["harness.load", "inspection"] } } }
+            "prefixItems": [
+              { "properties": { "id": { "const": "harness.load" }, "status": { "const": "fail" } } },
+              { "properties": { "id": { "const": "inspection" }, "status": { "const": "skipped" } } },
+              { "properties": { "id": { "const": "harness.selection" }, "status": { "enum": ["pass", "warn"] } } },
+              { "properties": { "id": { "const": "harness.git" }, "status": { "enum": ["pass", "warn", "skipped"] } } }
+            ],
+            "items": false,
+            "anyOf": [{ "maxItems": 2 }, { "minItems": 4 }]
           }
         }
       }

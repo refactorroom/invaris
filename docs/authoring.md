@@ -18,7 +18,7 @@ Both presets generate `"version": "invaris.dev/v1alpha2"`. This field identifies
 |---|---|
 | `invaris init --detect` | Prints marker detection as JSON on stdout. Writes nothing. Cannot be combined with `--preset` or `--dry-run`. |
 | `invaris init --dry-run [--preset P]` | Prints the exact configuration on stdout and an explanation on stderr. Writes nothing. |
-| `invaris init [--preset P]` | Creates `.invaris/` with mode `0700` if absent and `.invaris/invaris.json` with mode `0600` and prints `created <path>`. |
+| `invaris init [--preset P]` | Creates `.invaris/` with mode `0700` if absent and `.invaris/invaris.json` with mode `0600` and prints `created <path>`. It warns on stderr if Git ignores the new harness. |
 
 Detection inspects only these entries at the root, with `lstat`: `go.mod`, `go.work`, `package.json`, `Cargo.toml`, `.gitmodules` and `.git` (directory or file). A marker that is a symbolic link, a special file, unreadable, or larger than 1 MiB is refused. Marker contents are not interpreted, nested directories are not searched, and no tool is invoked. Detection only recommends; it never selects a preset, and mixed or workspace markers are reported as such.
 
@@ -26,9 +26,24 @@ Detection inspects only these entries at the root, with `lstat`: `go.mod`, `go.w
 
 Invaris stores new project configuration in `.invaris/invaris.json`. `run`, `check`, `challenge`, `mutate`, `doctor` and `migrate` prefer that file in the current directory and fall back to a root-level `invaris.json` when it is absent. An invalid workspace configuration is reported, never silently skipped. An explicit harness path selects exactly that file.
 
-For a harness directly inside `.invaris`, commands, targets, writable paths and workspace options are relative to its parent project directory. Other harnesses retain their containing directory as the execution root. `.invaris` remains excluded from disposable execution copies, so put guard scripts and other execution inputs in the project itself. Commit configuration files in `.invaris` to share them with your team.
+For a harness directly inside `.invaris`, commands, targets, writable paths and workspace options are relative to its parent project directory. Other harnesses retain their containing directory as the execution root. `.invaris` remains excluded from disposable execution copies, so put guard scripts and other execution inputs in the project itself.
 
 To adopt the layout for an existing project, move `invaris.json` into `.invaris/invaris.json`; project-relative paths keep their meaning. `init` refuses an existing root-level configuration instead of creating a competing one. Existing `.invaris` directories are reused, but a file or symbolic link at `.invaris` is refused. Detection and dry runs create neither the folder nor the file. Verification commands require an existing configuration; use `init` to create it.
+
+### Share a project harness through Git
+
+Normally, commit a harness that defines project policy so teammates and CI receive it in a checkout. You can commit `.invaris/invaris.json` in its default location. Run `invaris doctor` from the project directory to see which harness it selects and how Git classifies it.
+
+If Git ignores the workspace harness, run `git check-ignore -v -- .invaris/invaris.json` from the project directory to locate the matching rule. If a root `.gitignore` excludes `/.invaris/`, replace that rule with these rules to ignore the directory's contents and allow the harness:
+
+```gitignore
+/.invaris/*
+!/.invaris/invaris.json
+```
+
+If you keep the original directory rule, put `!/.invaris/` after it and before the two lines above. Git must be able to enter every parent directory for the file exception to take effect. Use paths relative to the `.gitignore` you edit and check for overriding rules in nearer `.gitignore` files. [Git ignore pattern rules](https://git-scm.com/docs/gitignore#_pattern_format)
+
+Run `invaris doctor` again. Once it reports the harness as untracked, review the harness, stage it with `git add -- .invaris/invaris.json`, and commit it with any shared ignore-rule changes. For a root-level harness, use `invaris.json` in the Git commands. Both `init` and `doctor` leave the ignore rules and Git index as they are.
 
 ### Presets
 

@@ -4,13 +4,17 @@ Two commands help with the first experiment. `invaris doctor` inspects a harness
 
 A diagnostic never says that something passed when it was not performed. What `doctor` cannot know without running a command it reports as skipped, and what a report cannot show `explain` lists as a limit.
 
-## doctor: inspect setup without running anything
+## doctor: inspect harness setup
 
 ```sh
 invaris doctor [--format text|json] [harness.json]
 ```
 
-The default harness is `.invaris/invaris.json`, with `invaris.json` as a fallback when the workspace file is absent, and the default format is `text`. Flags come before the harness path. `doctor` loads the harness with the same strict loader the other commands use, then inspects it. A harness directly inside `.invaris` inspects its parent project directory. It starts no process: no step, guard, test, validation command or provider adapter is executed, and every check in the JSON has `"executed": false`.
+The default harness is `.invaris/invaris.json`, with `invaris.json` as a fallback when the workspace file is absent. An explicit path selects that file. The default format is `text`. Flags come before the harness path. `doctor` loads the harness with the same strict loader the other commands use. A harness directly inside `.invaris` inspects its parent project directory.
+
+For readable harnesses, `doctor` shows the selected path and explains the selection. If both default files exist, automatic selection warns that the workspace file takes precedence. It checks Git from the same project directory it inspects, using read-only Git queries. Every JSON check has `"executed": false` because `doctor` runs no harness command.
+
+The Git check passes for a file in the Git index, warns if the file is ignored or untracked, and is skipped when Git status could not be determined, for example when Git is missing or the file is outside a checkout. A tracked file may still need to be committed or pushed. Git warnings leave the exit code unchanged. To fix a sharing warning, see [how to share a project harness through Git](authoring.md#share-a-project-harness-through-git).
 
 | Exit | Meaning |
 | --- | --- |
@@ -32,7 +36,7 @@ Checks appear in this order. `<id>` is the ID of the step, guard, challenge or e
 
 | Check ID | Fails or warns when |
 | --- | --- |
-| `harness.load` | The harness does not load. Then `inspection` is skipped and nothing else is reported. |
+| `harness.load` | The harness does not load. Then `inspection` is skipped, and doctor still reports selection and Git status. |
 | `harness.version` | Warns when a loaded v1alpha1 harness can be previewed for migration to v1alpha2. Migration preserves the existing effective behavior and keeps a backup when written. |
 | `action.run`, `action.check`, `action.challenge`, `action.mutate` | Never fails. Skipped when the harness version does not support the action, or, for `challenge`, when it declares none. |
 | `workspace.copy` | The harness directory could not be copied into a workspace: a symbolic link, a file over 10 MiB, an unreadable file, a declared dependency that is not a directory, or more entries than the bound (2000, or the harness's `workspace.maxEntries`). The message names the path relative to the harness directory and the [`workspace` field](harness-spec.md#workspace-options) that resolves it. Paths the harness excludes or declares as dependencies are not checked. Checked only when there is a challenge or an experiment, because only those copy the directory; skipped otherwise. |
@@ -42,6 +46,8 @@ Checks appear in this order. `<id>` is the ID of the step, guard, challenge or e
 | `edit.<id>` | A literal `before` marker does not occur exactly once, a declared `preimageSha256` no longer matches the file, or a built-in operator cannot apply to the file (for example a file with carriage returns). |
 | `writable.<path>` | A `writablePaths` entry that an edit targets does not resolve to a regular file (fails), or that nothing uses does not exist (warns). |
 | `provider.<id>` | Always skipped: discovering a provider runs its adapter, which `doctor` does not do. |
+| `harness.selection` | Warns when both default files exist and automatic discovery selects the workspace file. |
+| `harness.git` | Warns when the selected file is ignored or untracked. Skipped when Git status could not be determined. |
 
 A `pass` means the setup that was inspected looks right. It does not mean a command will print the result object its role requires, that `go run ./tool` will compile, or that a guard will find anything.
 

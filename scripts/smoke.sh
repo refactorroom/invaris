@@ -64,7 +64,7 @@ count=$((count + 1))
 printf 'PASS challenge --format compact examples/operators\n'
 
 # explain reads a saved report offline and refuses a tampered one; doctor
-# inspects a harness's setup and executes nothing.
+# inspects a harness's setup without running harness commands.
 (cd "$root/examples/operators" && "$tmp/invaris" --report "$tmp/explain-report.json" challenge) >/dev/null
 "$tmp/invaris" explain "$tmp/explain-report.json" >"$tmp/explained.txt"
 grep -q -- '-> detected' "$tmp/explained.txt"
