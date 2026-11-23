@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.3
+
+- `invaris init` warns when Git ignores the newly created workspace harness.
+- `invaris doctor` explains harness selection and reports Git tracking status. Git warnings do not change the exit code.
+- The [sharing guide](docs/authoring.md#share-a-project-harness-through-git) explains how to commit project policy and handle ignored parent directories.
+
 ## 0.5.2
 
 - `invaris init` and `invaris init --dry-run` explain the difference between the harness format and the CLI release. New guard harnesses still use `invaris.dev/v1alpha2`, and the dry run still sends only JSON to stdout.

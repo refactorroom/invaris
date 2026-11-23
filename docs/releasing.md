@@ -7,13 +7,13 @@ See [GitHub releases](https://github.com/refactorroom/invaris/releases) for publ
 Use the Go version in `go.mod`, Python 3.11 or later, and Linux or macOS on amd64 or arm64. Run from the repository root:
 
 ```sh
-python3 scripts/package-release.py v0.5.2 --output dist/v0.5.2
-python3 scripts/verify-release.py v0.5.2 dist/v0.5.2
+python3 scripts/package-release.py v0.5.3 --output dist/v0.5.3
+python3 scripts/verify-release.py v0.5.3 dist/v0.5.3
 ```
 
 The destination must not exist. Packaging refuses to overwrite an earlier build; on failure, inspect the partial output and choose a new destination. `dist/` is ignored by Git. Build from the exact tested release commit with a clean worktree before publication.
 
-The directory contains four `invaris_0.5.2_<os>_<arch>.tar.gz` archives (`linux` and `darwin`, each on `amd64` and `arm64`) and `SHA256SUMS`. Every archive has only `invaris`, `invaris-command-provider`, `LICENSE` and a version-specific `README.md` at its root. Builds disable cgo and stamp `engineVersion` with `v0.5.2`.
+The directory contains four `invaris_0.5.3_<os>_<arch>.tar.gz` archives (`linux` and `darwin`, each on `amd64` and `arm64`) and `SHA256SUMS`. Every archive has only `invaris`, `invaris-command-provider`, `LICENSE` and a version-specific `README.md` at its root. Builds disable cgo and stamp `engineVersion` with `v0.5.3`.
 
 Verification checks every archive's SHA-256, exact member list, regular file types and executable permissions. It extracts the native archive into a new folder with a space in its name, then runs the installed CLI and provider, checks the stamped version, reads text and compact output, runs an operator campaign, initializes an empty project and rehearses migration with an exact backup. Other architecture binaries are cross-built and inspected, but are not executed on that runner.
 
@@ -28,7 +28,7 @@ After verifying the archives, create and push the version tag and publish
 the files manually:
 
 ```sh
-TAG=v0.5.2
+TAG=v0.5.3
 ARCHIVES="dist/$TAG"
 git tag -a "$TAG" -m "Invaris $TAG"
 git push origin "refs/tags/$TAG"
@@ -46,7 +46,7 @@ Use Node.js 22.14 or later. Build the npm tarball from the same verified
 archives. The package output directory must be new.
 
 ```sh
-TAG=v0.5.2
+TAG=v0.5.3
 ARCHIVES="dist/$TAG"
 NPM_DIR="dist/npm-$TAG"
 node --test npm/launcher.test.js
