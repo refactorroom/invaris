@@ -37,7 +37,7 @@
       "program": "sh",
       "args": [
         "-c",
-        "out=$(go test -count=1 ./internal/mutation 2>&1); rc=$?; fails=0; tests=''; sep=''\nfor t in TestPlanGoldens TestPlanIneligibleInputs TestValidate; do\n  if printf '%s\\n' \"$out\" | grep -Eq -- \"--- FAIL: $t( |/)\"; then s=ASSERTION_FAILED; fails=1; else s=PASS; fi\n  tests=\"$tests$sep{\\\"id\\\":\\\"$t\\\",\\\"status\\\":\\\"$s\\\"}\"; sep=,\ndone\nif [ $rc -ne 0 ] && [ $fails -eq 0 ]; then printf '%s\\n' \"$out\" >&2; exit 2; fi\nprintf '{\"version\":\"invaris.test-result/v1alpha1\",\"tests\":[%s]}\\n' \"$tests\"\nexit $fails"
+        "go test -json -count=1 -run '^(TestPlanGoldens|TestPlanIneligibleInputs|TestValidate)$' ./internal/mutation | invaris test-result go-test-json"
       ],
       "envAllowlist": [
         "PATH",
@@ -49,9 +49,46 @@
       "timeoutSeconds": 300
     },
     "testIds": [
-      "TestPlanGoldens",
-      "TestPlanIneligibleInputs",
-      "TestValidate"
+      "github.com/akkaraponph/invaris/internal/mutation.TestPlanGoldens/whitespace_first_line",
+      "github.com/akkaraponph/invaris/internal/mutation.TestPlanGoldens/whitespace_skips_empty_and_already-trailing_lines",
+      "github.com/akkaraponph/invaris/internal/mutation.TestPlanGoldens/whitespace_ignores_unterminated_last_line",
+      "github.com/akkaraponph/invaris/internal/mutation.TestPlanGoldens/whitespace_unicode",
+      "github.com/akkaraponph/invaris/internal/mutation.TestPlanGoldens/crlf_first_LF_only",
+      "github.com/akkaraponph/invaris/internal/mutation.TestPlanGoldens/crlf_leading_empty_line",
+      "github.com/akkaraponph/invaris/internal/mutation.TestPlanGoldens/secret_appended",
+      "github.com/akkaraponph/invaris/internal/mutation.TestPlanGoldens",
+      "github.com/akkaraponph/invaris/internal/mutation.TestPlanIneligibleInputs/empty/trailing-whitespace",
+      "github.com/akkaraponph/invaris/internal/mutation.TestPlanIneligibleInputs/empty/crlf-injection",
+      "github.com/akkaraponph/invaris/internal/mutation.TestPlanIneligibleInputs/empty/secret-leak-injection",
+      "github.com/akkaraponph/invaris/internal/mutation.TestPlanIneligibleInputs/NUL/trailing-whitespace",
+      "github.com/akkaraponph/invaris/internal/mutation.TestPlanIneligibleInputs/NUL/crlf-injection",
+      "github.com/akkaraponph/invaris/internal/mutation.TestPlanIneligibleInputs/NUL/secret-leak-injection",
+      "github.com/akkaraponph/invaris/internal/mutation.TestPlanIneligibleInputs/invalid_UTF-8/trailing-whitespace",
+      "github.com/akkaraponph/invaris/internal/mutation.TestPlanIneligibleInputs/invalid_UTF-8/crlf-injection",
+      "github.com/akkaraponph/invaris/internal/mutation.TestPlanIneligibleInputs/invalid_UTF-8/secret-leak-injection",
+      "github.com/akkaraponph/invaris/internal/mutation.TestPlanIneligibleInputs/CRLF/trailing-whitespace",
+      "github.com/akkaraponph/invaris/internal/mutation.TestPlanIneligibleInputs/CRLF/crlf-injection",
+      "github.com/akkaraponph/invaris/internal/mutation.TestPlanIneligibleInputs/CRLF/secret-leak-injection",
+      "github.com/akkaraponph/invaris/internal/mutation.TestPlanIneligibleInputs/mixed_endings/trailing-whitespace",
+      "github.com/akkaraponph/invaris/internal/mutation.TestPlanIneligibleInputs/mixed_endings/crlf-injection",
+      "github.com/akkaraponph/invaris/internal/mutation.TestPlanIneligibleInputs/mixed_endings/secret-leak-injection",
+      "github.com/akkaraponph/invaris/internal/mutation.TestPlanIneligibleInputs/lone_CR/trailing-whitespace",
+      "github.com/akkaraponph/invaris/internal/mutation.TestPlanIneligibleInputs/lone_CR/crlf-injection",
+      "github.com/akkaraponph/invaris/internal/mutation.TestPlanIneligibleInputs/lone_CR/secret-leak-injection",
+      "github.com/akkaraponph/invaris/internal/mutation.TestPlanIneligibleInputs/oversized/trailing-whitespace",
+      "github.com/akkaraponph/invaris/internal/mutation.TestPlanIneligibleInputs/oversized/crlf-injection",
+      "github.com/akkaraponph/invaris/internal/mutation.TestPlanIneligibleInputs/oversized/secret-leak-injection",
+      "github.com/akkaraponph/invaris/internal/mutation.TestPlanIneligibleInputs/result_over_limit/trailing-whitespace",
+      "github.com/akkaraponph/invaris/internal/mutation.TestPlanIneligibleInputs/result_over_limit/crlf-injection",
+      "github.com/akkaraponph/invaris/internal/mutation.TestPlanIneligibleInputs/secret_result_over_limit/secret-leak-injection",
+      "github.com/akkaraponph/invaris/internal/mutation.TestPlanIneligibleInputs/no_newline/trailing-whitespace",
+      "github.com/akkaraponph/invaris/internal/mutation.TestPlanIneligibleInputs/no_newline/crlf-injection",
+      "github.com/akkaraponph/invaris/internal/mutation.TestPlanIneligibleInputs/no_newline/secret-leak-injection",
+      "github.com/akkaraponph/invaris/internal/mutation.TestPlanIneligibleInputs/every_line_already_trailing/trailing-whitespace",
+      "github.com/akkaraponph/invaris/internal/mutation.TestPlanIneligibleInputs/secret_without_final_LF/secret-leak-injection",
+      "github.com/akkaraponph/invaris/internal/mutation.TestPlanIneligibleInputs/secret_already_present/secret-leak-injection",
+      "github.com/akkaraponph/invaris/internal/mutation.TestPlanIneligibleInputs",
+      "github.com/akkaraponph/invaris/internal/mutation.TestValidate"
     ]
   }
 }
