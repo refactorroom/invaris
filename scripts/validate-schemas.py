@@ -463,12 +463,13 @@ def diagnostics_checks(binary, tmp):
         check(counts == doc["summary"], f"doctor {label}: summary does not match the checks")
         check((code == 1) == (counts["fail"] > 0), f"doctor {label}: exit code disagrees with the failures")
         sample_doctor = sample_doctor or doc
-    # A harness that does not load reports one failure and skips the rest.
+    # A failed load skips harness inspection but still reports selection and Git status.
     broken = tmp / "doctor-broken.json"
     broken.write_text("{")
     code, out, _ = run_cli(binary, ROOT, "doctor", "--format", "json", str(broken))
     doc = json.loads(out) if out else {}
-    check(code == 1 and valid(dv, doc) and [c["id"] for c in doc.get("checks", [])] == ["harness.load", "inspection"], "doctor on an invalid harness")
+    check(code == 1 and valid(dv, doc) and [c["id"] for c in doc.get("checks", [])] ==
+          ["harness.load", "inspection", "harness.selection", "harness.git"], "doctor on an invalid harness")
     check(run_cli(binary, ROOT, "doctor", str(tmp / "missing.json"))[0] == 2, "doctor on a missing file must exit 2")
     if sample_doctor:
         def mutated(edit):

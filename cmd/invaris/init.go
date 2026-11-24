@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -63,7 +64,7 @@ func parseFlags(args []string, valued, boolean []string) (parsedFlags, error) {
 // runInitCLI detects project markers or writes a starter harness. It never
 // runs project code, never overwrites an existing file and does not produce
 // verification evidence.
-func runInitCLI(args []string, stdout, stderr io.Writer) int {
+func runInitCLI(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 	usage := func(problem string) int {
 		fmt.Fprintln(stderr, problem)
 		fmt.Fprintln(stderr, "usage:", initUsage)
@@ -163,6 +164,9 @@ func runInitCLI(args []string, stdout, stderr io.Writer) int {
 	}
 	fmt.Fprintf(stdout, "created %s\n", target)
 	fmt.Fprint(stderr, explain)
+	if harnessGitStatus(ctx, target) == gitIgnored {
+		fmt.Fprintln(stderr, "warning:", ignoredHarnessAdvice)
+	}
 	return 0
 }
 

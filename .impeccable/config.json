@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "docs/index.html"
+        ],
+        "createdAt": "2026-11-23T10:01:56.335Z",
+        "reason": "Agent verified desktop and mobile renders: Quick start and Reference use full-width backgrounds with content inset by the shared .wrap and vertical .section padding."
+      }
+    ]
+  }
+}

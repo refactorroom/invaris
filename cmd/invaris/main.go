@@ -77,10 +77,10 @@ func runCLI(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 			return runValidityResultCLI(ctx, args[1:], stdout, stderr)
 		}
 		if args[0] == "doctor" {
-			return runDoctorCLI(args[1:], stdout, stderr)
+			return runDoctorCLI(ctx, args[1:], stdout, stderr)
 		}
 		if args[0] == "init" {
-			return runInitCLI(args[1:], stdout, stderr)
+			return runInitCLI(ctx, args[1:], stdout, stderr)
 		}
 		return runMigrateCLI(args[1:], stdout, stderr)
 	}

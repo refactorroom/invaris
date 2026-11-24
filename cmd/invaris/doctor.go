@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -18,43 +19,46 @@ const doctorFooter = "doctor executed no harness commands; results describe setu
 
 // doctorArgs parses the arguments after doctor: optional flags, then at most
 // one harness path (default .invaris/invaris.json, then invaris.json).
-func doctorArgs(args []string) (format, file string, err error) {
-	format, file = formatText, configfile.DefaultPath("invaris.json")
-	seenFormat, seenFile := false, false
+func doctorArgs(args []string) (format, file string, explicit bool, err error) {
+	format = formatText
+	seenFormat := false
 	for i := 0; i < len(args); i++ {
 		arg := args[i]
 		switch {
-		case seenFile:
+		case explicit:
 			if strings.HasPrefix(arg, "--") {
-				return "", "", fmt.Errorf("flags must come before the harness file: %s", arg)
+				return "", "", false, fmt.Errorf("flags must come before the harness file: %s", arg)
 			}
-			return "", "", fmt.Errorf("unexpected argument: %s", arg)
+			return "", "", false, fmt.Errorf("unexpected argument: %s", arg)
 		case arg == "--format":
 			if seenFormat {
-				return "", "", errors.New("--format is repeated")
+				return "", "", false, errors.New("--format is repeated")
 			}
 			seenFormat = true
 			if i+1 >= len(args) || args[i+1] == "" {
-				return "", "", errors.New("--format requires a value")
+				return "", "", false, errors.New("--format requires a value")
 			}
 			i++
 			if format = args[i]; format != formatText && format != formatJSON {
-				return "", "", fmt.Errorf("unsupported format: %s", format)
+				return "", "", false, fmt.Errorf("unsupported format: %s", format)
 			}
 		case strings.HasPrefix(arg, "--"):
-			return "", "", fmt.Errorf("unknown flag: %s", arg)
+			return "", "", false, fmt.Errorf("unknown flag: %s", arg)
 		default:
-			file, seenFile = arg, true
+			file, explicit = arg, true
 		}
 	}
-	return format, file, nil
+	if !explicit {
+		file = configfile.DefaultPath("invaris.json")
+	}
+	return format, file, explicit, nil
 }
 
-// runDoctorCLI inspects a harness's setup. It executes nothing and writes no
-// files. Exit 0 means no check failed, 1 a check failed, 2 a usage problem or
-// an unreadable harness file.
-func runDoctorCLI(args []string, stdout, stderr io.Writer) int {
-	format, file, err := doctorArgs(args)
+// runDoctorCLI inspects a harness's setup without running harness commands or
+// writing files. Exit 0 means no check failed, 1 a check failed, 2 a usage
+// problem or an unreadable harness file.
+func runDoctorCLI(ctx context.Context, args []string, stdout, stderr io.Writer) int {
+	format, file, explicit, err := doctorArgs(args)
 	if err != nil {
 		fmt.Fprintln(stderr, err)
 		fmt.Fprintln(stderr, "usage:", doctorUsage)
@@ -77,6 +81,7 @@ func runDoctorCLI(args []string, stdout, stderr io.Writer) int {
 	}
 	f.Close()
 	d := doctor.Inspect(file)
+	addHarnessChecks(ctx, &d, explicit)
 	var out []byte
 	if format == formatJSON {
 		if out, err = d.JSON(); err != nil {
@@ -94,6 +99,34 @@ func runDoctorCLI(args []string, stdout, stderr io.Writer) int {
 		return 1
 	}
 	return 0
+}
+
+func addHarnessChecks(ctx context.Context, d *doctor.Diagnosis, explicit bool) {
+	status := doctor.Pass
+	reason := "selected the default workspace harness"
+	switch {
+	case explicit:
+		reason = "selected by the explicit harness argument"
+	case d.Harness == "invaris.json":
+		reason = "selected the root fallback because .invaris/invaris.json is absent"
+	default:
+		if info, err := os.Stat("invaris.json"); err == nil && info.Mode().IsRegular() {
+			status = doctor.Warn
+			reason = ".invaris/invaris.json takes precedence over invaris.json. Pass invaris.json explicitly to inspect it."
+		}
+	}
+	d.AddCheck("harness.selection", status, reason)
+
+	switch harnessGitStatus(ctx, d.Harness) {
+	case gitTracked:
+		d.AddCheck("harness.git", doctor.Pass, "tracked in the Git index")
+	case gitIgnored:
+		d.AddCheck("harness.git", doctor.Warn, ignoredHarnessAdvice)
+	case gitUntracked:
+		d.AddCheck("harness.git", doctor.Warn, "untracked by Git. Add and commit the harness if it is project policy.")
+	default:
+		d.AddCheck("harness.git", doctor.Skipped, "Git status could not be determined. Check that Git is available and the harness is in a working tree.")
+	}
 }
 
 // doctorText renders a diagnosis for people. Ids and messages are escaped.

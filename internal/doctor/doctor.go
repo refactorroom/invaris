@@ -38,8 +38,8 @@ const (
 	Skipped = "skipped"
 )
 
-// Check is one inspection result. Executed is always false: doctor runs
-// nothing.
+// Check is one inspection result. Executed is always false because doctor
+// never runs harness commands.
 type Check struct {
 	ID       string `json:"id"`
 	Status   string `json:"status"`
@@ -87,18 +87,23 @@ type inspector struct {
 	d Diagnosis
 }
 
-func (i *inspector) add(id, status, format string, args ...any) {
-	i.d.Checks = append(i.d.Checks, Check{ID: id, Status: status, Message: fmt.Sprintf(format, args...)})
+// AddCheck appends a setup check and includes it in the summary.
+func (d *Diagnosis) AddCheck(id, status, message string) {
+	d.Checks = append(d.Checks, Check{ID: id, Status: status, Message: message})
 	switch status {
 	case Pass:
-		i.d.Summary.Pass++
+		d.Summary.Pass++
 	case Fail:
-		i.d.Summary.Fail++
+		d.Summary.Fail++
 	case Warn:
-		i.d.Summary.Warn++
+		d.Summary.Warn++
 	default:
-		i.d.Summary.Skipped++
+		d.Summary.Skipped++
 	}
+}
+
+func (i *inspector) add(id, status, format string, args ...any) {
+	i.d.AddCheck(id, status, fmt.Sprintf(format, args...))
 }
 
 // command is a program the harness would start.

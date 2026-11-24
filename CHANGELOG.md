@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.3
+
+- `invaris init` warns when Git ignores the newly created workspace harness.
+- `invaris doctor` explains harness selection and reports Git tracking status. Git warnings do not change the exit code.
+- The [sharing guide](docs/authoring.md#share-a-project-harness-through-git) explains how to commit project policy and handle ignored parent directories.
+
 ## 0.5.2
 
 - The repository self-check covers the same directory scope as `gofmt -l .` and uses structured Go test results for its mutation experiments.
