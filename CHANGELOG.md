@@ -2,6 +2,7 @@
 
 ## 0.5.2
 
+- The repository self-check covers the same directory scope as `gofmt -l .` and uses structured Go test results for its mutation experiments.
 - `invaris init` and `invaris init --dry-run` explain the difference between the harness format and the CLI release. New guard harnesses still use `invaris.dev/v1alpha2`, and the dry run still sends only JSON to stdout.
 - `invaris doctor` warns when it loads a `v1alpha1` harness and shows how to preview and apply a migration. The warning does not change the exit status.
 - The quickstart previews a new harness and the [harness reference](docs/harness-spec.md#configuration-versions) explains which formats to use.

@@ -3,14 +3,33 @@
   "name": "invaris-selfcheck-guardrail",
   "trustMode": "trusted-local",
   "networkPolicy": "unrestricted",
-  "writablePaths": ["internal/mutation/operators.go", "docs/releases/0.3.0.md"],
-  "policies": [{"id": "gofmt-clean"}],
+  "writablePaths": [
+    "internal/mutation/operators.go",
+    "docs/releases/0.3.0.md"
+  ],
+  "policies": [
+    {
+      "id": "gofmt-clean"
+    }
+  ],
   "guards": [
     {
       "id": "gofmt",
       "program": "go",
-      "args": ["run", "./internal/selfcheck/fmtguard", "-policy", "gofmt-clean", "cmd", "internal"],
-      "envAllowlist": ["PATH", "HOME", "GOTOOLCHAIN", "GOPROXY", "GOFLAGS"],
+      "args": [
+        "run",
+        "./internal/selfcheck/fmtguard",
+        "-policy",
+        "gofmt-clean",
+        "."
+      ],
+      "envAllowlist": [
+        "PATH",
+        "HOME",
+        "GOTOOLCHAIN",
+        "GOPROXY",
+        "GOFLAGS"
+      ],
       "timeoutSeconds": 300,
       "policyId": "gofmt-clean",
       "minInspected": 50
@@ -21,13 +40,22 @@
       "id": "trailing-whitespace-detected",
       "guard": "gofmt",
       "file": "internal/mutation/operators.go",
-      "mutation": {"operator": "trailing-whitespace", "version": "1", "preimageSha256": "d3487c2990379e4b5b6a31c52b924be8d57dbafdd0a80a644f81ac0d55f441c2"}
+      "mutation": {
+        "operator": "trailing-whitespace",
+        "version": "1",
+        "preimageSha256": "d3487c2990379e4b5b6a31c52b924be8d57dbafdd0a80a644f81ac0d55f441c2"
+      }
     },
     {
       "id": "secret-missed-control",
       "guard": "gofmt",
       "file": "docs/releases/0.3.0.md",
-      "mutation": {"operator": "secret-leak-injection", "version": "1", "preimageSha256": "dc349b7d49bd7b5a233cd1f493cf4bedd4adbb1aa132ee4fd47559a61840d0fb", "fixture": "invaris-test-token-v1"}
+      "mutation": {
+        "operator": "secret-leak-injection",
+        "version": "1",
+        "preimageSha256": "dc349b7d49bd7b5a233cd1f493cf4bedd4adbb1aa132ee4fd47559a61840d0fb",
+        "fixture": "invaris-test-token-v1"
+      }
     }
   ]
 }

@@ -7,9 +7,8 @@
 // and exit 1 means at least one. A file it cannot read or parse exits 2 and
 // prints no object, so an unreadable tree is never reported as clean.
 // `inspected` counts the .go files formatted; findings are sorted by path.
-// A ROOT must be a directory (a symlink to one is followed). Directories named testdata,
-// node_modules or vendor, and directories whose name starts with ".", are
-// skipped.
+// A ROOT must be a directory (a symlink to one is followed). All directories
+// are scanned; files whose names start with "." are skipped, as with gofmt.
 package main
 
 import (
@@ -38,10 +37,6 @@ type inspection struct {
 	Findings  []finding `json:"findings"`
 }
 
-func skipDir(name string) bool {
-	return name == "testdata" || name == "node_modules" || name == "vendor" || strings.HasPrefix(name, ".")
-}
-
 func scan(policy string, roots []string) (inspection, error) {
 	out := inspection{Version: "invaris.inspection/v1alpha1", PolicyID: policy, Findings: []finding{}}
 	for _, root := range roots {
@@ -64,12 +59,9 @@ func scan(policy string, roots []string) (inspection, error) {
 				return err
 			}
 			if d.IsDir() {
-				if path != walkRoot && skipDir(d.Name()) {
-					return filepath.SkipDir
-				}
 				return nil
 			}
-			if !strings.HasSuffix(path, ".go") {
+			if strings.HasPrefix(d.Name(), ".") || !strings.HasSuffix(d.Name(), ".go") {
 				return nil
 			}
 			data, err := os.ReadFile(path)

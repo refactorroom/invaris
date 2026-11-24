@@ -2,6 +2,12 @@
 
 This is the record of one real experiment run on this repository, written to find out where the workflow hurts. It is a log, not a success story: where something failed or needed a guess, it says so.
 
+## Current harness (November 2026)
+
+The record below describes the original run. The current formatting guard scans the repository root, including `examples`, hidden directories, `testdata`, `node_modules`, and `vendor`, and skips dot-prefixed Go files like `gofmt -l .`. It is a structured self-check and does not run the remaining CI checks (vet, tests, race, smoke, schema, fuzz, and adapter checks).
+
+The mutation harnesses run the three selected Go tests with `go test -json` and convert their actual results with the installed `invaris test-result go-test-json`. They explicitly list the resulting parent and subtest IDs; when those tests change, update the list to match the converter output. This requires Invaris on `PATH`. The installed v0.5.0 converter does not support the `--test-id` filtering described by newer repository documentation. The deliberate missed-detection controls remain in the campaign, so its strict acceptance policy is expected to reject even when the controls behave as intended.
+
 ## The concern, and why
 
 Invaris claims it can show whether a guard or a test suite notices a deliberate fault. The roadmap asks for that claim to be exercised on a project that is not a purpose-built fixture. The experiment uses this repository with three parts:
