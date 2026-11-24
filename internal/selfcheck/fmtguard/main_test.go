@@ -84,19 +84,19 @@ func TestUsageErrors(t *testing.T) {
 	}
 }
 
-func TestSkippedDirectories(t *testing.T) {
+func TestGofmtDirectoryScope(t *testing.T) {
 	root := t.TempDir()
-	write(t, filepath.Join(root, "ok.go"), "package ok\n")
 	for _, d := range []string{"testdata", "node_modules", "vendor", ".hidden"} {
-		write(t, filepath.Join(root, d, "bad.go"), "package bad\n\nfunc (\n")
-		write(t, filepath.Join(root, "sub", d, "ugly.go"), "package x \n")
+		write(t, filepath.Join(root, d, "bad.go"), "package x \n")
 	}
+	write(t, filepath.Join(root, ".ignored.go"), "not Go")
 	code, out, errb := invoke(t, "-policy", "gofmt-clean", root)
-	if code != 0 {
+	if code != 1 {
 		t.Fatalf("exit %d, stderr %q", code, errb)
 	}
-	if res := decode(t, out); res.Inspected != 1 {
-		t.Fatalf("inspected %d, want 1", res.Inspected)
+	res := decode(t, out)
+	if res.Inspected != 4 || len(res.Findings) != 4 {
+		t.Fatalf("unexpected result %+v", res)
 	}
 }
 
